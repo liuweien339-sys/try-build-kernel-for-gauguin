@@ -1,4 +1,4 @@
-name: Build Kernel with SukiSUItra
+name: 为Gauguin编译SukiSUUltra内核
 
 on:
   workflow_dispatch:
@@ -9,13 +9,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    name: Build Gauguin Kernel
+    name: 构建Gauguin内核
     steps:
-      - name: Checkout Kernel Source
+      - name: 克隆内核源码
         run: |
          git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2 kernel
 
-      - name: Setup Build Environment
+      - name: 下载工具链
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y \
@@ -33,7 +33,7 @@ jobs:
             python3 python3-pip libncurses5-dev \
             ccache cpio rsync wget
 
-      - name: Setup Clang & GCC
+      - name: 下载 Clang & GCC
         run: |
           wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
           mkdir ~/clang
@@ -47,13 +47,13 @@ jobs:
           export PATH="~/gcc/bin:$PATH"
           chmod +x ~/gcc/bin/*
           
-      - name: Add SukiSUUltra Support
+      - name: 增加SukiSUUltra支持
         run: |
-          git clone --depth=1 https://github.com/SukiSUItra/SukiSUItra zayu
+          git clone --depth=1 https://github.com/SukiSUItra/SukiSUItra
           cd ~/kernel
-          sh ~/zayu/kernel/setup.sh ~/kernel
+          sh ~/SukiSUUltra/kernel/setup.sh ~/kernel
 
-      - name: Build Kernel
+      - name: 构建内核
         run: |
           cd ~/kernel
           export ARCH=arm64
@@ -70,16 +70,16 @@ jobs:
             2>&1 | tee build.log
           
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "❌ Kernel build failed!"
-            echo "Last 50 lines of build log:"
+            echo "Failed 构建失败"
+            echo "日志:"
             tail -50 build.log
             exit 1
           fi
           
-          echo "✅ Kernel build completed successfully!"
+          echo "Success 构建成功"
           ls -la out/arch/arm64/boot/
 
-      - name: Collect Build Artifacts
+      - name: 获取编译结果
         run: |
           mkdir -p artifacts
           
@@ -107,9 +107,9 @@ jobs:
           echo "Artifacts:"
           ls -la artifacts/
 
-      - name: Create AnyKernel3 Flashable ZIP
+      - name: 创建AnyKernel3刷机包
         run: |
-          git clone --depth=1 https://github.com/SukiSUItra/AnyKernel3 AnyKernel3
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3
           
           cd AnyKernel3
           
@@ -130,39 +130,37 @@ jobs:
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           echo "Created $ZIP_NAME"
 
-      - name: Upload Build Artifacts
+      - name: 上传编译结果
         uses: actions/upload-artifact@v4
         if: success()
         with:
           name: SukiSUItra-Kernel-Flashable
           path: SukiSUItra-Kernel-*.zip
 
-      - name: Upload Build Log
+      - name: 上传编译日志
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: build-log
           path: ${{ github.workspace }}/kernel/build.log
 
-      - name: Build Summary
+      - name: 构建结果
         if: always()
         run: |
           echo "========================================="
-          echo "        BUILD SUMMARY                    "
+          echo "        构建结果                    "
           echo "========================================="
-          echo "Kernel: ${{ env.KERNEL_REPO }}"
-          echo "Branch: ${{ github.event.inputs.kernel_branch }}"
           echo "Clang: ${{ env.CLANG_VERSION }}"
-          echo "Status: ${{ job.status }}"
+          echo "状态: ${{ job.status }}"
           echo "========================================="
           
           if [ -f ${{ github.workspace }}/kernel/build.log ]; then
-            echo "Last 30 lines of build log:"
+            echo "日志:"
             tail -30 ${{ github.workspace }}/kernel/build.log
           fi
           
           if [ -f SukiSUItra-Kernel-*.zip ]; then
             echo ""
-            echo "📦 Flashable ZIP: ${{ env.ZIP_NAME }}"
+            echo "📦 刷机文件: ${{ env.ZIP_NAME }}"
             ls -lh SukiSUItra-Kernel-*.zip
           fi
