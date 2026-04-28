@@ -46,7 +46,7 @@ jobs:
         run: |
           wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          sh setup.sh ~/android_kernel_xiaomi_gauguin
+          sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/android_kernel_xiaomi_gauguin
 
       - name: 构建内核
         run: |
