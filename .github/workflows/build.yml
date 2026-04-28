@@ -49,9 +49,9 @@ jobs:
           
       - name: 增加SukiSUUltra支持
         run: |
-          git clone --depth=1 https://github.com/SukiSUItra/SukiSUItra
+          git clone https://github.com/SukiSU-Ultra/SukiSU-Ultra.git
           cd ~/kernel
-          sh ~/SukiSUUltra/kernel/setup.sh ~/kernel
+          sh ~/SukiSU-Ultra/kernel/setup.sh ~/kernel
 
       - name: 构建内核
         run: |
