@@ -1,0 +1,241 @@
+name: Build Kernel with SukiSUItra
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_branch:
+        description: 'Kernel branch/tag'
+        required: true
+        default: 'lineage-23.2'
+
+env:
+  KERNEL_REPO: LineageOS/android_kernel_xiaomi_gauguin
+  CLANG_BRANCH: android16-qpr2-release
+  CLANG_VERSION: clang-r563880c
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    name: Build Gauguin Kernel
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 1024
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.KERNEL_REPO }}
+          ref: ${{ github.event.inputs.kernel_branch }}
+          path: kernel
+
+      - name: Setup Build Environment
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            git automake flex lzop bison gperf \
+            build-essential zip curl zlib1g-dev \
+            g++-multilib libxml2-utils bzip2 libbz2-dev \
+            libbz2-1.0 libghc-bzlib-dev squashfs-tools \
+            schedtool dpkg-dev liblz4-tool make \
+            maven libssl-dev libswitch-perl \
+            policycoreutils libxml-sax-base-perl \
+            libxml-simple-perl bc libc6-dev-i386 \
+            lib32ncurses5-dev x11proto-core-dev \
+            libx11-dev lib32z-dev libgl1-mesa-dev \
+            xsltproc unzip device-tree-compiler \
+            python3 python3-pip libncurses5-dev \
+            ccache cpio rsync
+
+      - name: Setup Clang
+        run: |
+          echo "Setting up Clang ${{ env.CLANG_VERSION }}..."
+          
+          mkdir -p ${{ github.workspace }}/toolchain
+          
+          # Clone only the needed clang version using sparse checkout
+          cd ${{ github.workspace }}/toolchain
+          
+          echo "Cloning Clang from AOSP (this may take a while)..."
+          git clone --depth=1 --filter=blob:none --no-checkout \
+            https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 \
+            clang-temp
+          
+          cd clang-temp
+          git sparse-checkout init --cone
+          git sparse-checkout set ${{ env.CLANG_VERSION }}
+          git checkout ${{ env.CLANG_BRANCH }}
+          
+          # Move to proper location
+          mv ${{ env.CLANG_VERSION }} ${{ github.workspace }}/toolchain/clang
+          cd ${{ github.workspace }}/toolchain
+          rm -rf clang-temp
+          
+          echo "TC_CLANG=${{ github.workspace }}/toolchain/clang" >> $GITHUB_ENV
+          
+          # Verify installation
+          ${{ github.workspace }}/toolchain/clang/bin/clang --version
+
+      - name: Setup GCC ARM64
+        run: |
+          echo "Setting up GCC ARM64..."
+          
+          git clone --depth=1 \
+            https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 \
+            ${{ github.workspace }}/toolchain/gcc-arm64
+          
+          echo "TC_GCC=${{ github.workspace }}/toolchain/gcc-arm64" >> $GITHUB_ENV
+          echo "CROSS_COMPILE=${{ github.workspace }}/toolchain/gcc-arm64/bin/aarch64-linux-android-" >> $GITHUB_ENV
+
+      - name: Integrate SukiSUItra
+        working-directory: ${{ github.workspace }}/kernel
+        run: |
+          echo "Integrating SukiSUItra..."
+          
+          # Clone SukiSUItra
+          git clone --depth=1 https://github.com/SukiSUItra/SukiSUItra SukiSUItra
+          
+          # Run setup script if it exists in SukiSUItra directory
+          if [ -f SukiSUItra/setup.sh ]; then
+            bash SukiSUItra/setup.sh
+          fi
+
+      - name: Run Kernel Setup Script
+        working-directory: ${{ github.workspace }}/kernel
+        run: |
+          echo "Running kernel setup.sh..."
+          
+          if [ -f setup.sh ]; then
+            chmod +x setup.sh
+            bash setup.sh
+          else
+            echo "setup.sh not found in kernel directory"
+            echo "Listing files:"
+            ls -la
+          fi
+
+      - name: Build Kernel
+        working-directory: ${{ github.workspace }}/kernel
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          
+          # Setup PATH
+          export PATH="${{ env.TC_CLANG }}/bin:${{ env.TC_GCC }}/bin:$PATH"
+          
+          # Create output directory
+          mkdir -p out
+          
+          # Build kernel
+          make O=out \
+            ARCH=arm64 \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-android- \
+            -j$(nproc --all) \
+            2>&1 | tee build.log
+          
+          # Check build status
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "❌ Kernel build failed!"
+            echo "Last 50 lines of build log:"
+            tail -50 build.log
+            exit 1
+          fi
+          
+          echo "✅ Kernel build completed successfully!"
+          ls -la out/arch/arm64/boot/
+
+      - name: Collect Build Artifacts
+        run: |
+          mkdir -p artifacts
+          
+          cd ${{ github.workspace }}/kernel
+          
+          # Copy all possible kernel images
+          for img in Image Image.gz Image.gz-dtb; do
+            if [ -f out/arch/arm64/boot/$img ]; then
+              cp out/arch/arm64/boot/$img artifacts/
+              echo "Found $img"
+            fi
+          done
+          
+          # Copy DTB files
+          if [ -d out/arch/arm64/boot/dts ]; then
+            find out/arch/arm64/boot/dts -name "*.dtb" -exec cp {} artifacts/ \;
+          fi
+          
+          # Copy DTBO if exists
+          [ -f out/arch/arm64/boot/dtbo.img ] && cp out/arch/arm64/boot/dtbo.img artifacts/
+          
+          # Copy modules if any
+          find out -name "*.ko" -exec cp {} artifacts/ \; 2>/dev/null || true
+          
+          echo "Artifacts:"
+          ls -la artifacts/
+
+      - name: Create AnyKernel3 Flashable ZIP
+        run: |
+          git clone --depth=1 https://github.com/SukiSUItra/AnyKernel3 AnyKernel3
+          
+          cd AnyKernel3
+          
+          # Copy kernel image
+          cp ../artifacts/Image* . 2>/dev/null || true
+          
+          # Copy dtb files
+          cp ../artifacts/*.dtb . 2>/dev/null || true
+          
+          # Copy dtbo
+          cp ../artifacts/dtbo.img . 2>/dev/null || true
+          
+          # Remove git files and create zip
+          rm -rf .git
+          ZIP_NAME="SukiSUItra-Kernel-gauguin-$(date +%Y%m%d-%H%M).zip"
+          zip -r9 ../$ZIP_NAME * -x README.md LICENSE
+          
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+          echo "Created $ZIP_NAME"
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: SukiSUItra-Kernel-Flashable
+          path: SukiSUItra-Kernel-*.zip
+
+      - name: Upload Build Log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-log
+          path: ${{ github.workspace }}/kernel/build.log
+
+      - name: Build Summary
+        if: always()
+        run: |
+          echo "========================================="
+          echo "        BUILD SUMMARY                    "
+          echo "========================================="
+          echo "Kernel: ${{ env.KERNEL_REPO }}"
+          echo "Branch: ${{ github.event.inputs.kernel_branch }}"
+          echo "Clang: ${{ env.CLANG_VERSION }}"
+          echo "Status: ${{ job.status }}"
+          echo "========================================="
+          
+          if [ -f ${{ github.workspace }}/kernel/build.log ]; then
+            echo "Last 30 lines of build log:"
+            tail -30 ${{ github.workspace }}/kernel/build.log
+          fi
+          
+          if [ -f SukiSUItra-Kernel-*.zip ]; then
+            echo ""
+            echo "📦 Flashable ZIP: ${{ env.ZIP_NAME }}"
+            ls -lh SukiSUItra-Kernel-*.zip
+          fi
