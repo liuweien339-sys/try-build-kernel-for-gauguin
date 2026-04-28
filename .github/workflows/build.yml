@@ -1,11 +1,6 @@
 name: 为Gauguin编译SukiSUUltra内核
-
 on:
   workflow_dispatch:
-    inputs:
-      kernel_branch:
-        description: 'Kernel branch/tag'
-        required: true
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -50,17 +45,16 @@ jobs:
       - name: 增加SukiSUUltra支持
         run: |
           git clone https://github.com/SukiSU-Ultra/SukiSU-Ultra.git
-          cd ~/android_kernel_xiaomi_gauguin
+          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           sh ~/SukiSU-Ultra/kernel/setup.sh ~/android_kernel_xiaomi_gauguin
 
       - name: 构建内核
         run: |
-          cd ~/android_kernel_xiaomi_gauguin
+          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           export ARCH=arm64
           export SUBARCH=arm64
-
           mkdir -p out
-          
+          make defconfig
           make O=out \
             ARCH=arm64 \
             CC=clang \
@@ -83,7 +77,7 @@ jobs:
         run: |
           mkdir -p artifacts
           
-          cd ${{ github.workspace }}/kernel
+          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           
           # Copy all possible kernel images
           for img in Image Image.gz Image.gz-dtb; do
@@ -142,7 +136,7 @@ jobs:
         if: always()
         with:
           name: build-log
-          path: ${{ github.workspace }}/kernel/build.log
+          path: ${{ github.workspace }}/android_kernel_xiaomi_gauguin/build.log
 
       - name: 构建结果
         if: always()
@@ -150,7 +144,6 @@ jobs:
           echo "========================================="
           echo "        构建结果                    "
           echo "========================================="
-          echo "Clang: ${{ env.CLANG_VERSION }}"
           echo "状态: ${{ job.status }}"
           echo "========================================="
           
