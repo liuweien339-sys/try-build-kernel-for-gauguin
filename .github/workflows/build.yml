@@ -51,6 +51,9 @@ jobs:
       - name: 构建内核
         run: |
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
+          #Fake min-tool-version.sh
+          touch ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
+          chmod +x ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
           export ARCH=arm64
           export SUBARCH=arm64
           mkdir -p out
