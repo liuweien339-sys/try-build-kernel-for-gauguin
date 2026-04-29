@@ -36,7 +36,7 @@ jobs:
           export PATH="~/clang/bin:$PATH"
           chmod +x ~/clang/bin/*
           
-          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
+          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
           mkdir ~/gcc
           tar -xzf android12-release.tar.gz -C ~/gcc
           export PATH="~/gcc/bin:$PATH"
