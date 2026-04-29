@@ -29,21 +29,32 @@ jobs:
             python3 python3-pip libncurses5-dev \
             ccache cpio rsync wget
 
-      - name: 下载 Clang & GCC
+      - name: 设置 Clang & GCC
         run: |
           wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
           mkdir ~/clang
           tar -xzf clang-r563880c.tar.gz -C ~/clang
-          export PATH="~/clang/bin:$PATH"
+          export PATH="$HOME/clang/bin:$PATH"
           chmod +x ~/clang/bin/*
           
           wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
           mkdir ~/gcc
-          tar -xzf aarch64-linux-android-4.9-refs_heads_android12-release.tar.gz -C ~/gcc
-          export PATH="~/gcc/bin:$PATH"
-          chmod +x ~/gcc/bin/*
-          
-      - name: 增加SukiSUUltra支持
+          tar -xzf android12-release.tar.gz -C ~/gcc
+          export PATH="$HOME/gcc/bin:$PATH"
+          chmod +x /gcc/bin/*
+
+      - name: 检查 Clang & GCC 版本
+        run: |
+          echo "========================================="
+          echo "        Clang版本                    "
+          echo "========================================="
+          clang --version
+          echo "========================================="
+          echo "        GCC版本                      "
+          echo "========================================="
+          gcc --version
+          echo "=========================================
+      - name: 增加 SukiSUUltra 支持
         run: |
           wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
@@ -105,7 +116,7 @@ jobs:
           echo "Artifacts:"
           ls -la artifacts/
 
-      - name: 创建AnyKernel3刷机包
+      - name: 创建 AnyKernel3 刷机包
         run: |
           git clone --depth=1 https://github.com/osm0sis/AnyKernel3
           
