@@ -45,7 +45,7 @@ jobs:
 
           sudo cp -a ~/gcc/bin /usr/bin
           sudo cp -a ~/clang/bin /usr/bin
-          chmod +x /usr/bin/*
+          sudo chmod +x /usr/bin/*
           
       - name: 检查 Clang & GCC 版本
         run: |
