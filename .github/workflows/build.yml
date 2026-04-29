@@ -53,7 +53,8 @@ jobs:
           echo "        GCC版本                      "
           echo "========================================="
           gcc --version
-          echo "=========================================
+          echo "========================================="
+          
       - name: 增加 SukiSUUltra 支持
         run: |
           wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
