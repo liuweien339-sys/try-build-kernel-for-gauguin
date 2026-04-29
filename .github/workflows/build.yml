@@ -64,6 +64,7 @@ jobs:
         run: |
           echo "====下载依赖===="
           sudo apt update
+          sudo apt upgrade
           sudo apt install -y \
             git automake flex lzop bison gperf \
             build-essential zip curl zlib1g-dev \
