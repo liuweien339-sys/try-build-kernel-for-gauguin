@@ -41,7 +41,7 @@ jobs:
           mkdir ~/gcc
           tar -xzf android12-release.tar.gz -C ~/gcc
           export PATH="~/gcc/bin:$PATH"
-          chmod +x /gcc/bin/*
+          chmod +x ~/gcc/bin/*
 
       - name: 检查 Clang & GCC 版本
         run: |
