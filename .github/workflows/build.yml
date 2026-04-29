@@ -6,14 +6,64 @@ jobs:
     runs-on: ubuntu-22.04
     name: 构建Gauguin内核
     steps:
-      - name: 克隆内核源码
+      - name: 设置 Clang
         run: |
-         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2
+          echo "====设置Clang工具链===="
+          echo "====下载Clang工具链===="
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
+          echo "====创建Clang工具链解压目录===="
+          mkdir ~/clang
+          echo "====解压Clang工具链===="
+          tar -xzf clang-r563880c.tar.gz -C ~/clang
+          echo "====设置PATH调用Clang工具链===="
+          export PATH="~/clang/bin:$PATH"
+          echo "====给予Clang工具链权限===="
+          chmod +x ~/clang/bin/*
+          echo "====设置Clang工具链完成===="
+          
+      - name: 设置 GCC
+        run: |
+          echo "====设置GCC工具链===="
+          echo "====下载GCC工具链===="
+          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
+          echo "====创建GCC工具链解压路径===="
+          mkdir ~/gcc
+          echo "====解压GCC工具链===="
+          tar -xzf android12-release.tar.gz -C ~/gcc
+          echo "====设置PATH调用GCC工具链===="
+          export PATH="~/gcc/bin:$PATH"
+          echo "====给予GCC工具链权限===="
+          chmod +x ~/gcc/bin/*
+          echo "====设置GCC工具链完成===="
+          
+      - name: 卸载系统自带工具链 & 设置Clang
+        run: |
+         echo "====移除系统自带Clang & GCC===="
+         sudo rm -f /usr/bin/clang*
+         sudo rm -f /usr/bin/clang++*
+         sudo rm -f /usr/bin/llvm*
+         sudo rm -f /usr/bin/lld*
+         sudo rm -f /usr/bin/gcc*
+         sudo rm -f /usr/bin/g++*
+         sudo rm -f /usr/bin/cpp*
+         echo "====移除系统自带Clang & GCC完成===="
+         
+      - name: 检查 Clang & GCC 版本
+        run: |
+          echo "========================================="
+          echo "        Clang版本                    "
+          echo "========================================="
+          clang --version
+          echo "========================================="
+          echo "        GCC版本                      "
+          echo "========================================="
+          gcc --version
+          echo "========================================="
 
       - name: 下载工具链
         run: |
+          echo "====下载依赖===="
           sudo apt-get update
-          
           sudo apt-get install -y \
             git automake flex lzop bison gperf \
             build-essential zip curl zlib1g-dev \
@@ -28,45 +78,25 @@ jobs:
             xsltproc unzip device-tree-compiler \
             python3 python3-pip libncurses5-dev \
             ccache cpio rsync wget
-
-      - name: 设置 Clang & GCC
+            echo "====下载依赖完成===="
+            
+      - name: 克隆内核源码
         run: |
-          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
-          mkdir ~/clang
-          tar -xzf clang-r563880c.tar.gz -C ~/clang
-          export PATH="~/clang/bin:$PATH"
-          chmod +x ~/clang/bin/*
-          
-          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
-          mkdir ~/gcc
-          tar -xzf android12-release.tar.gz -C ~/gcc
-          export PATH="~/gcc/bin:$PATH"
-          chmod +x ~/gcc/bin/*
-
-          sudo cp -a ~/gcc/bin /usr/bin
-          sudo cp -a ~/clang/bin /usr/bin
-          sudo chmod +x /usr/bin/*
-          
-      - name: 检查 Clang & GCC 版本
-        run: |
-          echo "========================================="
-          echo "        Clang版本                    "
-          echo "========================================="
-          clang --version
-          echo "========================================="
-          echo "        GCC版本                      "
-          echo "========================================="
-          gcc --version
-          echo "========================================="
-          
+         echo "====下载内核源码===="
+         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2
+         echo "====下载内核源码完成===="
+         
       - name: 增加 SukiSUUltra 支持
         run: |
+          echo "====给予内核SukiSUUltra支持===="
           wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-
+          echo "====给予内核SukiSUUltra支持完成===="
+          
       - name: 构建内核
         run: |
+          echo "====构建内核===="
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           #Fake min-tool-version.sh
           touch ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
@@ -84,13 +114,13 @@ jobs:
             2>&1 | tee build.log
           
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "Failed 构建失败"
+            echo "构建失败"
             echo "日志:"
             tail -50 build.log
             exit 1
           fi
           
-          echo "Success 构建成功"
+          echo "构建成功"
           ls -la out/arch/arm64/boot/
 
       - name: 获取编译结果
