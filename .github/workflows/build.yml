@@ -34,13 +34,13 @@ jobs:
           wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
           mkdir ~/clang
           tar -xzf clang-r563880c.tar.gz -C ~/clang
-          export PATH="$HOME/clang/bin:$PATH"
+          export PATH="~/clang/bin:$PATH"
           chmod +x ~/clang/bin/*
           
           wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
           mkdir ~/gcc
           tar -xzf android12-release.tar.gz -C ~/gcc
-          export PATH="$HOME/gcc/bin:$PATH"
+          export PATH="~/gcc/bin:$PATH"
           chmod +x /gcc/bin/*
 
       - name: 检查 Clang & GCC 版本
