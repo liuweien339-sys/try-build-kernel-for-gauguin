@@ -34,15 +34,13 @@ jobs:
           chmod +x ~/gcc/bin/*
           echo "====下载GCC工具链完成===="
           
-      - name: 卸载系统自带工具链 & 设置Clang & GCC
+      - name: 卸载系统自带Clang & 设置AOSP Clang和GCC
         run: |
          echo "====移除系统自带Clang & GCC===="
          sudo rm -f /usr/bin/clang*
          sudo rm -f /usr/bin/clang++*
          sudo rm -f /usr/bin/llvm*
          sudo rm -f /usr/bin/lld*
-         sudo rm -f /usr/bin/gcc*
-         sudo rm -f /usr/bin/g++*
          sudo rm -f /usr/bin/cpp*
          sudo cp -a ~/gcc/bin/* /usr/bin
          sudo cp -a ~/clang/bin/* /usr/bin
@@ -54,10 +52,6 @@ jobs:
           echo "        Clang版本                    "
           echo "========================================="
           clang --version
-          echo "========================================="
-          echo "        GCC版本                      "
-          echo "========================================="
-          gcc --version
           echo "========================================="
 
       - name: 下载工具链
@@ -98,7 +92,6 @@ jobs:
         run: |
           echo "====构建内核===="
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          #Fake min-tool-version.sh
           touch ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
           chmod +x ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
           export ARCH=arm64
