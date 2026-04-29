@@ -12,7 +12,8 @@ jobs:
 
       - name: 下载工具链
         run: |
-          sudo apt-get update -qq
+          sudo apt-get update
+          
           sudo apt-get install -y \
             git automake flex lzop bison gperf \
             build-essential zip curl zlib1g-dev \
