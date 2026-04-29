@@ -60,11 +60,11 @@ jobs:
           clang --version
           echo "========================================="
 
-      - name: 下载工具链
+      - name: 下载依赖
         run: |
           echo "====下载依赖===="
-          sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt update 2>/dev/null
+          sudo apt install -y \
             git automake flex lzop bison gperf \
             build-essential zip curl zlib1g-dev \
             g++-multilib libxml2-utils bzip2 libbz2-dev \
@@ -77,7 +77,8 @@ jobs:
             libx11-dev lib32z-dev libgl1-mesa-dev \
             xsltproc unzip device-tree-compiler \
             python3 python3-pip libncurses5-dev \
-            ccache cpio rsync wget
+            cpio rsync wget 2>/dev/null
+            sudo apt remove  libyaml-dev 2>/dev/null
             echo "====下载依赖完成===="
          
       - name: 增加 SukiSUUltra 支持
