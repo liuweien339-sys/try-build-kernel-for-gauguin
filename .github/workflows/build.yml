@@ -6,11 +6,10 @@ jobs:
     runs-on: ubuntu-22.04
     name: 构建Gauguin内核
     steps:
-      - name: 设置 Clang
+      - name: 下载 Clang
         run: |
-          echo "====设置Clang工具链===="
           echo "====下载Clang工具链===="
-          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz 2>/dev/null
           echo "====创建Clang工具链解压目录===="
           mkdir ~/clang
           echo "====解压Clang工具链===="
@@ -19,13 +18,12 @@ jobs:
           export PATH="~/clang/bin:$PATH"
           echo "====给予Clang工具链权限===="
           chmod +x ~/clang/bin/*
-          echo "====设置Clang工具链完成===="
+          echo "====下载Clang工具链完成===="
           
-      - name: 设置 GCC
+      - name: 下载 GCC
         run: |
-          echo "====设置GCC工具链===="
           echo "====下载GCC工具链===="
-          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz
+          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz 2>/dev/null
           echo "====创建GCC工具链解压路径===="
           mkdir ~/gcc
           echo "====解压GCC工具链===="
@@ -34,9 +32,9 @@ jobs:
           export PATH="~/gcc/bin:$PATH"
           echo "====给予GCC工具链权限===="
           chmod +x ~/gcc/bin/*
-          echo "====设置GCC工具链完成===="
+          echo "====下载GCC工具链完成===="
           
-      - name: 卸载系统自带工具链 & 设置Clang
+      - name: 卸载系统自带工具链 & 设置Clang & GCC
         run: |
          echo "====移除系统自带Clang & GCC===="
          sudo rm -f /usr/bin/clang*
@@ -46,7 +44,9 @@ jobs:
          sudo rm -f /usr/bin/gcc*
          sudo rm -f /usr/bin/g++*
          sudo rm -f /usr/bin/cpp*
-         echo "====移除系统自带Clang & GCC完成===="
+         sudo cp -a ~/gcc/bin/* /usr/bin
+         sudo cp -a ~/clang/bin/* /usr/bin
+         echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
          
       - name: 检查 Clang & GCC 版本
         run: |
