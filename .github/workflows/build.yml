@@ -46,7 +46,7 @@ jobs:
          sudo cp -a ~/clang/bin/* /usr/bin
          echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
          
-      - name: 检查 Clang & GCC 版本
+      - name: 检查 Clang 版本
         run: |
           echo "========================================="
           echo "        Clang版本                    "
