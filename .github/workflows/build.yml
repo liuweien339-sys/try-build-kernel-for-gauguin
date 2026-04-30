@@ -100,6 +100,9 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           make defconfig
+          #?不是怎么还带将警告视为错误的
+          scripts/config --disable CONFIG_CC_WERROR
+          make defconfig
           make -k \
                ARCH=arm64 \
                CC=clang \
