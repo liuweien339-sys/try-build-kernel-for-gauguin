@@ -100,18 +100,19 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           make defconfig
-          make ARCH=arm64 \
+          make -k \
+               ARCH=arm64 \
                CC=clang \
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-android- \
                -j$(nproc --all) \
-               2>&1 | tee build.log \
-               -k
+               2>&1 | tee build.log
           
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
             echo "构建失败"
-            echo "日志:"
+            echo "==========日志=========="
             tail -50 build.log
+            echo "==========日志=========="
             exit 1
           fi
           
