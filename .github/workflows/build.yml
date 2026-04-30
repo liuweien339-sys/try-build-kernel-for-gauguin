@@ -105,6 +105,7 @@ jobs:
                CC=clang \
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-android- \
+               KCFLAGS="-Wno-error -Wno-visibility" \
                -j$(nproc --all) \
                2>&1 | tee build.log
           
