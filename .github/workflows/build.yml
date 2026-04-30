@@ -12,14 +12,14 @@ jobs:
          git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2 --depth=1
          echo "====克隆内核源码完成===="
          
-      - name: 下载 Clang
+      - name: 下载 Clangr547379
         run: |
           echo "====下载Clang工具链===="
-          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz 2>/dev/null
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r547379.tar.gz 2>/dev/null
           echo "====创建Clang工具链解压目录===="
           mkdir ~/clang
           echo "====解压Clang工具链===="
-          tar -xzf clang-r563880c.tar.gz -C ~/clang
+          tar -xzf clang-r547379.tar.gz -C ~/clang
           echo "====设置PATH调用Clang工具链===="
           export PATH="~/clang/bin:$PATH"
           echo "====给予Clang工具链权限===="
@@ -104,8 +104,7 @@ jobs:
           sleep 2
           scripts/config --disable CONFIG_CC_WERROR
           make defconfig
-          make -i -k \
-               ARCH=arm64 \
+          make ARCH=arm64 \
                CC=clang \
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-android- \
