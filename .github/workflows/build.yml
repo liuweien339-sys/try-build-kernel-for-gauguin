@@ -73,12 +73,12 @@ jobs:
           schedtool dpkg-dev liblz4-tool make \
           maven libssl-dev libswitch-perl \
           policycoreutils libxml-sax-base-perl \
-          libxml-simple-perl bc libc6-dev-i386 \
+          libxml-simple-perl bc libc6-dev \
           lib32ncurses-dev x11proto-core-dev \
           libx11-dev lib32z-dev libgl1-mesa-dev \
           xsltproc unzip device-tree-compiler \
           python3 python3-pip libncurses-dev \
-          cpio rsync wget bc libyaml-dev
+          cpio rsync wget bc libyaml-dev 
           echo "====下载依赖完成===="
          
       - name: 增加 SukiSUUltra 支持
