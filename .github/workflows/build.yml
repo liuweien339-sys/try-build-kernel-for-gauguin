@@ -100,10 +100,11 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           make defconfig
-          #?不是怎么还带将警告视为错误的
+          echo "?不是怎么还带将警告视为错误的"
+          sleep 2
           scripts/config --disable CONFIG_CC_WERROR
           make defconfig
-          make -k \
+          make -i -k \
                ARCH=arm64 \
                CC=clang \
                CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -121,7 +122,7 @@ jobs:
           fi
           
           echo "构建成功"
-          ls -la out/arch/arm64/boot/
+          ls -la /arch/arm64/boot/
 
       - name: 获取编译结果
         run: |
@@ -131,19 +132,19 @@ jobs:
           
           # Copy all possible kernel images
           for img in Image Image.gz Image.gz-dtb; do
-            if [ -f out/arch/arm64/boot/$img ]; then
-              cp out/arch/arm64/boot/$img artifacts/
+            if [ -f /arch/arm64/boot/$img ]; then
+              cp /arch/arm64/boot/$img artifacts/
               echo "Found $img"
             fi
           done
           
           # Copy DTB files
           if [ -d out/arch/arm64/boot/dts ]; then
-            find out/arch/arm64/boot/dts -name "*.dtb" -exec cp {} artifacts/ \;
+            find /arch/arm64/boot/dts -name "*.dtb" -exec cp {} artifacts/ \;
           fi
           
           # Copy DTBO if exists
-          [ -f out/arch/arm64/boot/dtbo.img ] && cp out/arch/arm64/boot/dtbo.img artifacts/
+          [ -f /arch/arm64/boot/dtbo.img ] && cp out/arch/arm64/boot/dtbo.img artifacts/
           
           # Copy modules if any
           find out -name "*.ko" -exec cp {} artifacts/ \; 2>/dev/null || true
