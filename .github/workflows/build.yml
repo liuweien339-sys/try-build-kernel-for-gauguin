@@ -36,7 +36,6 @@ jobs:
           tar -xzf android12-release.tar.gz -C ~/gcc
           echo "====设置PATH调用GCC工具链===="
           export PATH="~/gcc/bin:$PATH"
-          export PATH="~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/:$PATH"
           echo "====给予GCC工具链权限===="
           chmod +x ~/gcc/bin/*
           echo "====下载GCC工具链完成===="
@@ -51,7 +50,7 @@ jobs:
          sudo rm -f /usr/bin/cpp*
          sudo cp -a ~/gcc/bin/* /usr/bin
          sudo cp -a ~/clang/bin/* /usr/bin
-         sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/* /usr/include
+         sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stdarg.h /usr/include
          echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
          
       - name: 检查 Clang 版本
