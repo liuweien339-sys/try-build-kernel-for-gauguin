@@ -6,6 +6,27 @@ jobs:
     runs-on: ubuntu-24.04
     name: 构建Gauguin内核
     steps:
+      - name: 下载依赖
+        run: |
+          echo "====下载依赖===="
+          sudo apt update
+          sudo apt install -y \
+          git automake flex lzop bison gperf \
+          build-essential zip curl zlib1g-dev \
+          g++-multilib libxml2-utils bzip2 libbz2-dev \
+          libbz2-1.0 libghc-bzlib-dev squashfs-tools \
+          schedtool dpkg-dev liblz4-tool make \
+          maven libssl-dev libswitch-perl \
+          policycoreutils libxml-sax-base-perl \
+          libxml-simple-perl bc libc6-dev \
+          lib32ncurses-dev x11proto-core-dev \
+          libx11-dev lib32z-dev libgl1-mesa-dev \
+          xsltproc unzip device-tree-compiler \
+          python3 python3-pip libncurses-dev \
+          cpio rsync wget bc libyaml-dev \
+          gcc libstdc++-13-dev gcc
+          echo "====下载依赖完成===="
+          
       - name: 克隆内核源码
         run: |
          echo "====克隆内核源码===="
@@ -52,27 +73,6 @@ jobs:
          sudo cp -a ~/clang/bin/* /usr/bin
          sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stdarg.h /usr/include
          echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
-         
-      - name: 下载依赖
-        run: |
-          echo "====下载依赖===="
-          sudo apt update
-          sudo apt install -y \
-          git automake flex lzop bison gperf \
-          build-essential zip curl zlib1g-dev \
-          g++-multilib libxml2-utils bzip2 libbz2-dev \
-          libbz2-1.0 libghc-bzlib-dev squashfs-tools \
-          schedtool dpkg-dev liblz4-tool make \
-          maven libssl-dev libswitch-perl \
-          policycoreutils libxml-sax-base-perl \
-          libxml-simple-perl bc libc6-dev \
-          lib32ncurses-dev x11proto-core-dev \
-          libx11-dev lib32z-dev libgl1-mesa-dev \
-          xsltproc unzip device-tree-compiler \
-          python3 python3-pip libncurses-dev \
-          cpio rsync wget bc libyaml-dev \
-          gcc libstdc++-12-dev
-          echo "====下载依赖完成===="
          
       - name: 增加 SukiSUUltra 支持
         run: |
