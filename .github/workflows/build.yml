@@ -9,7 +9,7 @@ jobs:
       - name: 克隆内核源码
         run: |
          echo "====克隆内核源码===="
-         git clone https://github.com/MiCode/Xiaomi_Kernel_OpenSource.git -b gauguin-r-oss --depth=1
+         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2 --depth=1
          echo "====克隆内核源码完成===="
          
       - name: 下载 Clang
@@ -78,14 +78,14 @@ jobs:
         run: |
           echo "====给予内核SukiSUUltra支持===="
           wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
-          cd ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
-          sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
+          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
+          sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           echo "====给予内核SukiSUUltra支持完成===="
           
       - name: 构建内核
         run: |
           echo "====构建内核===="
-          cd ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
+          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           export ARCH=arm64
           export SUBARCH=arm64
           make defconfig
@@ -111,7 +111,7 @@ jobs:
         run: |
           mkdir -p artifacts
           
-          cd ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
+          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
           
           # Copy all possible kernel images
           for img in Image Image.gz Image.gz-dtb; do
