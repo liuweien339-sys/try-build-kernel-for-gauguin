@@ -86,6 +86,8 @@ jobs:
         run: |
           echo "====构建内核===="
           cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
+          touch ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
+          chmod +x ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
           export ARCH=arm64
           export SUBARCH=arm64
           make defconfig
