@@ -9,7 +9,7 @@ jobs:
       - name: 克隆内核源码
         run: |
          echo "====克隆内核源码===="
-         git clone https://github.com/Dhollmen/Kernel_Xiaomi_Gauguin.git --depth=1
+         git clone https://github.com/MiCode/Xiaomi_Kernel_OpenSource.git -b gauguin-r-oss --depth=1
          echo "====克隆内核源码完成===="
          
       - name: 下载 Clang
@@ -57,7 +57,6 @@ jobs:
         run: |
           echo "====下载依赖===="
           sudo apt update
-          sudo apt upgrade -y
           sudo apt install -y \
           git automake flex lzop bison gperf \
           build-essential zip curl zlib1g-dev \
@@ -79,28 +78,21 @@ jobs:
         run: |
           echo "====给予内核SukiSUUltra支持===="
           wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
-          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/android_kernel_xiaomi_gauguin
+          cd ${{ github.workspace }}/and
+          sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
           echo "====给予内核SukiSUUltra支持完成===="
           
       - name: 构建内核
         run: |
           echo "====构建内核===="
-          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          touch ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
-          chmod +x ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
+          cd ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
           export ARCH=arm64
           export SUBARCH=arm64
-          make defconfig
-          echo "?不是怎么还带将警告视为错误的"
-          sleep 2
-          scripts/config --disable CONFIG_CC_WERROR
           make defconfig
           make ARCH=arm64 \
                CC=clang \
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-android- \
-               KCFLAGS="-Wno-error -Wno-visibility" \
                -j$(nproc --all) \
                2>&1 | tee build.log
           
@@ -119,7 +111,7 @@ jobs:
         run: |
           mkdir -p artifacts
           
-          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
+          cd ${{ github.workspace }}/Xiaomi_Kernel_OpenSource
           
           # Copy all possible kernel images
           for img in Image Image.gz Image.gz-dtb; do
