@@ -24,7 +24,7 @@ jobs:
           xsltproc unzip device-tree-compiler \
           python3 python3-pip libncurses-dev \
           cpio rsync wget bc libyaml-dev \
-          gcc libstdc++-13-dev gcc
+          gcc libstdc++-13-dev
           echo "====下载依赖完成===="
           
       - name: 克隆内核源码
