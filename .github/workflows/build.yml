@@ -53,14 +53,6 @@ jobs:
          sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stdarg.h /usr/include
          echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
          
-      - name: 检查 Clang 版本
-        run: |
-          echo "========================================="
-          echo "        Clang版本                    "
-          echo "========================================="
-          clang --version
-          echo "========================================="
-
       - name: 下载依赖
         run: |
           echo "====下载依赖===="
