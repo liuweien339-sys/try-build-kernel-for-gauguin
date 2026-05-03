@@ -48,11 +48,11 @@ jobs:
       - name: 下载 GCC
         run: |
           echo "====下载GCC工具链===="
-          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12-release.tar.gz 2>/dev/null
+          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz 2>/dev/null
           echo "====创建GCC工具链解压路径===="
           mkdir ~/gcc
           echo "====解压GCC工具链===="
-          tar -xzf android12-release.tar.gz -C ~/gcc
+          tar -xzf android12L-release.tar.gz -C ~/gcc
           echo "====设置PATH调用GCC工具链===="
           export PATH="~/gcc/bin:$PATH"
           echo "====给予GCC工具链权限===="
