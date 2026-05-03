@@ -70,6 +70,7 @@ jobs:
          sudo cp -a ~/gcc/bin/* /usr/bin
          sudo cp -a ~/clang/bin/* /usr/bin
          sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stdarg.h /usr/include
+         sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stddef.h /usr/include
          echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
          
       - name: 增加 SukiSUUltra 支持
