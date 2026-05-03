@@ -55,6 +55,8 @@ jobs:
           tar -xzf android12L-release.tar.gz -C ~/gcc
           echo "====设置PATH调用GCC工具链===="
           export PATH="~/gcc/bin:$PATH"
+          export PATH="~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/:$PATH"
+          export PATH="~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include-fixed/:$PATH"
           echo "====给予GCC工具链权限===="
           chmod +x ~/gcc/bin/*
           echo "====下载GCC工具链完成===="
@@ -71,6 +73,7 @@ jobs:
          sudo cp -a ~/clang/bin/* /usr/bin
          sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stdarg.h /usr/include
          sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stddef.h /usr/include
+         sudo cp -a ~/gcc//lib/gcc/aarch64-linux-android/4.9.x/include-fixed/limits.h /usr/include
          echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
          
       - name: 增加 SukiSUUltra 支持
