@@ -102,10 +102,11 @@ jobs:
 
           zip -r9 ../"${ZIP_NAME}.zip" * -x .git
           
-      - name: 发行
-        run: |
-          cd ${GITHUB_WORKSPACE}/gauguin
-          REL_NAME="gauguin_LineageOS-23.2_KernelSU_$(date -u +"%Y%m%d_%H%M")"
-          cd ${GITHUB_WORKSPACE} || exit 1
-          ZIP_FILE=$(ls *.zip)
-          gh release create "$REL_NAME" --title "$REL_NAME" --notes "" "${ZIP_FILE}" Image build.log
+          - name: 上传内核镜像
+           uses: actions/upload-artifact@v4
+           with:
+           name: gauguin-kernel
+           path: |
+           ${GITHUB_WORKSPACE}/gauguin/*.zip
+           ${GITHUB_WORKSPACE}/gauguin/Image
+           ${GITHUB_WORKSPACE}/gauguin/build.log
