@@ -43,11 +43,11 @@ jobs:
         run: |
               wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz    
               mkdir -p toolchains/clang-r563880c
-              tar -xf "clang-r563880c.tar.gz" -C "toolchains/clang-r563880c" || exit 1
+              tar -xzf "clang-r563880c.tar.gz" -C "toolchains/clang-r563880c" || exit 1
               
-              curl -LO https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
+              wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
               mkdir -p toolchains/aarch64-linux-android-4.9
-              tar -xf android12L-release.tar.gz -C toolchains/aarch64-linux-android-4.9
+              tar -xzf android12L-release.tar.gz -C toolchains/aarch64-linux-android-4.9
 
       - name: 为内核加上KernelSU支持
         run: |   
