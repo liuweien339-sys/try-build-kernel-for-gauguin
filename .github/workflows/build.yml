@@ -2,7 +2,7 @@ name: 构建内核
 on:
   workflow_dispatch:
 jobs:
-  BuilsKernel:
+  BuildKernel:
     env:
         GH_TOKEN: ${{ github.token }}
     runs-on: ubuntu-latest
