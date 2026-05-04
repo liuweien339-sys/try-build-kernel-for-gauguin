@@ -1,14 +1,25 @@
-name: 为Gauguin编译SukiSUUltra内核
+name: 构建内核
 on:
   workflow_dispatch:
 jobs:
-  build:
+  BuilsKernel:
+    env:
+        GH_TOKEN: ${{ github.token }}
     runs-on: ubuntu-latest
-    name: 构建Gauguin内核
+    permissions:
+      contents: write
+      actions: read
+      checks: read
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup SWAP
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 16
+          
       - name: 下载依赖
         run: |
-          echo "====下载依赖===="
           sudo apt update
           sudo apt install -y \
           bc bison flex \
@@ -23,176 +34,76 @@ jobs:
           dwarves \
           cpio \
           gcc-aarch64-linux-gnu
-          echo "====下载依赖完成===="
-          
-      - name: 克隆内核源码
+
+      - name: 克隆源码
         run: |
-         echo "====克隆内核源码===="
-         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2 --depth=1
-         echo "====克隆内核源码完成===="
-         
-      - name: 下载 Clang
+         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin -b lineage-23.2 --depth=1 gauguin
+
+      - name: 下载Clang GCC
         run: |
-          echo "====下载Clang工具链===="
-          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz 2>/dev/null
-          echo "====创建Clang工具链解压目录===="
-          mkdir ~/clang
-          echo "====解压Clang工具链===="
-          tar -xzf clang-r563880c.tar.gz -C ~/clang
-          echo "====设置PATH调用Clang工具链===="
-          export PATH="~/clang/bin:$PATH"
-          echo "====给予Clang工具链权限===="
-          chmod +x ~/clang/bin/*
-          echo "====下载Clang工具链完成===="
-          
-      - name: 下载 GCC
+              wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz    
+              mkdir -p toolchains/clang-r563880c
+              tar -xf "clang-r563880c.tar.gz" -C "toolchains/clang-r563880c" || exit 1
+              
+              curl -LO https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
+              mkdir -p toolchains/aarch64-linux-android-4.9
+              tar -xf android12L-release.tar.gz -C toolchains/aarch64-linux-android-4.9
+
+      - name: 为内核加上KernelSU支持
+        run: |   
+              cd ${GITHUB_WORKSPACE}/gauguin
+              wget https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash -s master || exit 1
+
+              curl -Lo patch2.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch || exit 1
+              patch -p1 < patch2.patch
+            
+              cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
+
+      - name: 制作内核config
         run: |
-          echo "====下载GCC工具链===="
-          wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz 2>/dev/null
-          echo "====创建GCC工具链解压路径===="
-          mkdir ~/gcc
-          echo "====解压GCC工具链===="
-          tar -xzf android12L-release.tar.gz -C ~/gcc
-          echo "====设置PATH调用GCC工具链===="
-          export PATH="~/gcc/bin:$PATH"
-          export PATH="~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/:$PATH"
-          export PATH="~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include-fixed/:$PATH"
-          echo "====给予GCC工具链权限===="
-          chmod +x ~/gcc/bin/*
-          echo "====下载GCC工具链完成===="
-          
-      - name: 卸载系统自带Clang & 设置AOSP Clang和GCC
-        run: |
-         echo "====移除系统自带Clang & GCC===="
-         sudo rm -f /usr/bin/clang*
-         sudo rm -f /usr/bin/clang++*
-         sudo rm -f /usr/bin/llvm*
-         sudo rm -f /usr/bin/lld*
-         sudo rm -f /usr/bin/cpp*
-         sudo cp -a ~/gcc/bin/* /usr/bin
-         sudo cp -a ~/clang/bin/* /usr/bin
-         sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stdarg.h /usr/include
-         sudo cp -a ~/gcc/lib/gcc/aarch64-linux-android/4.9.x/include/stddef.h /usr/include
-         sudo cp -a ~/gcc//lib/gcc/aarch64-linux-android/4.9.x/include-fixed/limits.h /usr/include
-         echo "====移除系统自带工具链 & 设置Clang & GCC完成===="
-         
-      - name: 增加 SukiSUUltra 支持
-        run: |
-          echo "====给予内核SukiSUUltra支持===="
-          wget https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/refs/heads/main/kernel/setup.sh
-          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          sh ${{ github.workspace }}/setup.sh ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          echo "====给予内核SukiSUUltra支持完成===="
-          
-      - name: 构建内核
-        run: |
-          echo "====构建内核===="
-          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          touch ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
-          chmod +x ${{ github.workspace }}/android_kernel_xiaomi_gauguin/scripts/min-tool-version.sh
+          cd ${GITHUB_WORKSPACE}/gauguin
+          export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
           export ARCH=arm64
           export SUBARCH=arm64
-          make defconfig
-          make ARCH=arm64 \
-               CC=clang \
-               LLVM=1
-               CLANG_TRIPLE=aarch64-linux-gnu- \
-               CROSS_COMPILE=aarch64-linux-android- \
-               -j$(nproc --all) \
-               2>&1 | tee build.log
-          
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "构建失败"
-            echo "==========日志=========="
-            tail -50 build.log
-            echo "==========日志=========="
-            exit 1
-          fi
-          
-          echo "构建成功"
-          ls -la /arch/arm64/boot/
+          export LLVM=1
+          export LLVM_IAS=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export DROIDSPACES_CONFIG="vendor/droidspaces.config"
 
-      - name: 获取编译结果
+            make O=out vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config $DROIDSPACES_CONFIG
+
+            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
+
+      - name: 构建内核
         run: |
-          mkdir -p artifacts
-          
-          cd ${{ github.workspace }}/android_kernel_xiaomi_gauguin
-          
-          # Copy all possible kernel images
-          for img in Image Image.gz Image.gz-dtb; do
-            if [ -f /arch/arm64/boot/$img ]; then
-              cp /arch/arm64/boot/$img artifacts/
-              echo "Found $img"
-            fi
-          done
-          
-          # Copy DTB files
-          if [ -d out/arch/arm64/boot/dts ]; then
-            find /arch/arm64/boot/dts -name "*.dtb" -exec cp {} artifacts/ \;
-          fi
-          
-          # Copy DTBO if exists
-          [ -f /arch/arm64/boot/dtbo.img ] && cp out/arch/arm64/boot/dtbo.img artifacts/
-          
-          # Copy modules if any
-          find out -name "*.ko" -exec cp {} artifacts/ \; 2>/dev/null || true
-          
-          echo "Artifacts:"
-          ls -la artifacts/
+          cd ${GITHUB_WORKSPACE}/gauguin
+          export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export LLVM=1
+          export LLVM_IAS=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
 
-      - name: 创建 AnyKernel3 刷机包
+          make -j$(nproc) O=out Image 2>&1 | tee ${GITHUB_WORKSPACE}/build.log
+
+      - name: 制作AK3
         run: |
-          git clone --depth=1 https://github.com/osm0sis/AnyKernel3
+          cd ${GITHUB_WORKSPACE}/gauguin
+          ZIP_NAME="gauguin_LineageOS-23.2_KernelSU_$(date -u +"%Y%m%d_%H%M")"
           
-          cd AnyKernel3
-          
-          # Copy kernel image
-          cp ../artifacts/Image* . 2>/dev/null || true
-          
-          # Copy dtb files
-          cp ../artifacts/*.dtb . 2>/dev/null || true
-          
-          # Copy dtbo
-          cp ../artifacts/dtbo.img . 2>/dev/null || true
-          
-          # Remove git files and create zip
-          rm -rf .git
-          ZIP_NAME="SukiSUItra-Kernel-gauguin-$(date +%Y%m%d-%H%M).zip"
-          zip -r9 ../$ZIP_NAME * -x README.md LICENSE
-          
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-          echo "Created $ZIP_NAME"
+          git clone https://github.com/Kernel-SU/AnyKernel3.git || exit 1
 
-      - name: 上传编译结果
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: SukiSUItra-Kernel-Flashable
-          path: SukiSUItra-Kernel-*.zip
+          cp gauguin/out/arch/arm64/boot/Image AnyKernel3/Image
+          cp gauguin/out/arch/arm64/boot/Image ./Image
+          cd AnyKernel3 || exit 1
 
-      - name: 上传编译日志
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-log
-          path: ${{ github.workspace }}/android_kernel_xiaomi_gauguin/build.log
+          sed -i "s|ksu_supported=true|" anykernel.sh
 
-      - name: 构建结果
-        if: always()
+          zip -r9 ../"${ZIP_NAME}.zip" * -x .git
+          
+      - name: 发行
         run: |
-          echo "========================================="
-          echo "        构建结果                    "
-          echo "========================================="
-          echo "状态: ${{ job.status }}"
-          echo "========================================="
-          
-          if [ -f ${{ github.workspace }}/kernel/build.log ]; then
-            echo "日志:"
-            tail -30 ${{ github.workspace }}/kernel/build.log
-          fi
-          
-          if [ -f SukiSUItra-Kernel-*.zip ]; then
-            echo ""
-            echo "📦 刷机文件: ${{ env.ZIP_NAME }}"
-            ls -lh SukiSUItra-Kernel-*.zip
-          fi
+          REL_NAME="gauguin_LineageOS-23.2_KernelSU_$(date -u +"%Y%m%d_%H%M")"
+          cd ${GITHUB_WORKSPACE} || exit 1
+          ZIP_FILE=$(ls *.zip)
+          gh release create "$REL_NAME" --title "$REL_NAME" --notes "" "${ZIP_FILE}" Image build.log
