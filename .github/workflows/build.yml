@@ -61,7 +61,7 @@ jobs:
 
       - name: 制作内核config
         run: |
-          sed -i 's/EXTRAVERSION = .*/EXTRAVERSION = -32457-DS-Lineage23.2/' ~/gauguin/Makefile
+          sed -i 's/EXTRAVERSION = .*/EXTRAVERSION = -32457-DS-Lineage23.2/' ${GITHUB_WORKSPACE}/gauguin/Makefile
           cd ${GITHUB_WORKSPACE}/gauguin
           export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
           export ARCH=arm64
