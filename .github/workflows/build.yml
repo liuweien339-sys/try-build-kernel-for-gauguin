@@ -107,6 +107,5 @@ jobs:
         with:
             name: gauguin-kernel
             path: |
-             ${GITHUB_WORKSPACE}/gauguin/*.zip
-             ${GITHUB_WORKSPACE}/gauguin/Image
+             ${GITHUB_WORKSPACE}/gauguin/out/arch/arm64/boot/Image
              ${GITHUB_WORKSPACE}/gauguin/build.log
