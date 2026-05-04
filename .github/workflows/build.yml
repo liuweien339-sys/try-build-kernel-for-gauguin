@@ -45,7 +45,7 @@ jobs:
               mkdir -p toolchains/clang-r563880c
               tar -xzf "clang-r563880c.tar.gz" -C "toolchains/clang-r563880c" || exit 1
               
-              wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
+              wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
               mkdir -p toolchains/aarch64-linux-android-4.9
               tar -xzf android12L-release.tar.gz -C toolchains/aarch64-linux-android-4.9
 
