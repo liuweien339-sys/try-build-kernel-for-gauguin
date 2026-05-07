@@ -1,0 +1,35 @@
+name: Build Clang 21 from release/21.x
+on: [push, workflow_dispatch]
+
+jobs:
+  build-clang-21:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: llvm/llvm-project
+          ref: release/21.x
+          fetch-depth: 1
+
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure (AArch64 target)
+        run: |
+          mkdir build && cd build
+          cmake -G Ninja ../llvm \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_ENABLE_PROJECTS=clang \
+            -DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
+            -DLLVM_INCLUDE_TESTS=OFF \
+            -DLLVM_INCLUDE_EXAMPLES=OFF \
+            -DLLVM_PARALLEL_LINK_JOBS=1
+
+      - name: Build
+        run: cd build && ninja clang
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-21-release-branch
+          path: build/bin/clang
