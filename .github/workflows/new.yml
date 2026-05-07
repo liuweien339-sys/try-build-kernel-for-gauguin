@@ -1,35 +1,61 @@
-name: Build Clang 21 from release/21.x
-on: [push, workflow_dispatch]
+name: Build AOSP Clang
+
+on:
+  workflow_dispatch:
 
 jobs:
-  build-clang-21:
+  build-aosp-clang:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: llvm/llvm-project
-          ref: release/21.x
-          fetch-depth: 1
+      - name: Download source tarball
+        run: |
+          wget https://android.googlesource.com/toolchain/llvm-project/+archive/refs/heads/mirror-goog-llvm-r563880-release.tar.gz
+          
+      - name: Extract source
+        run: |
+          mkdir llvm-project
+          tar -xzf mirror-goog-llvm-r563880-release.tar.gz -C llvm-project
+          ls -la llvm-project/  # 确认解压内容
 
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
-      - name: Configure (AArch64 target)
+      - name: Configure CMake
         run: |
           mkdir build && cd build
-          cmake -G Ninja ../llvm \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_ENABLE_PROJECTS=clang \
-            -DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
+          cmake -G Ninja ../llvm-project/llvm \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DLLVM_ENABLE_PROJECTS="clang;lld" \
+            -DLLVM_TARGETS_TO_BUILD="AArch64;ARM" \
             -DLLVM_INCLUDE_TESTS=OFF \
+            -DLLVM_INCLUDE_BENCHMARKS=OFF \
             -DLLVM_INCLUDE_EXAMPLES=OFF \
-            -DLLVM_PARALLEL_LINK_JOBS=1
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cd build && ninja clang
+        run: |
+          cd build
+          ninja clang lld -j$(nproc)
 
-      - name: Upload
+      - name: Test binary
+        run: |
+          cd build
+          file bin/clang
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: clang-21-release-branch
-          path: build/bin/clang
+          name: aosp-clang-arm64
+          path: |
+            build/bin/clang
+            build/bin/clang++
+            build/bin/lld
+            build/bin/ld.lld
+            build/lib/clang/
+          retention-days: 7
