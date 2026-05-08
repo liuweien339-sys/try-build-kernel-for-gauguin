@@ -13,9 +13,9 @@ jobs:
           
       - name: Extract source
         run: |
-          mkdir llvm-project
+          mkdir llvm
           tar -xzf mirror-goog-llvm-r563880-release.tar.gz -C llvm-project
-          ls -la llvm-project/
+          ls -la llvm/
 
       - name: Install build dependencies
         run: |
