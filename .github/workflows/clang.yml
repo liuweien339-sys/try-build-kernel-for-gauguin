@@ -1,59 +1,74 @@
-name: Build AOSP Clang for ARM64 Android
+name: Build AOSP Clang
+
 on:
   workflow_dispatch:
 
 jobs:
-  build-clang:
+  build-aosp-clang:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout llvm-project
-      uses: actions/checkout@v4
-      with:
-        repository: https://android.googlesource.com/toolchain/llvm-project
-        ref: mirror-goog-llvm-r563880-release
-        path: llvm-project
-        fetch-depth: 1
+      - name: Download source tarball
+        run: |
+          # 直接用 wget 下载 Google 的压缩包
+          wget https://android.googlesource.com/toolchain/llvm-project/+archive/refs/heads/mirror-goog-llvm-r563880-release.tar.gz
+          
+      - name: Extract source
+        run: |
+          mkdir llvm-project
+          # 解压到 llvm-project 目录
+          tar -xzf mirror-goog-llvm-r563880-release.tar.gz -C llvm-project
+          # 验证解压内容
+          ls -la llvm-project/
+          # 关键：检查是否有 CMakeLists.txt
+          find llvm-project -name "CMakeLists.txt" | head -5
 
-    - name: Install build dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build cmake python3
-        # 安装 ARM64 Android 的交叉编译器和库
-        sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-        # 如果要编译运行于 ARM64 Linux 的 Clang（而非 Android），还需要：
-        # sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
-    - name: Configure CMake (Cross-compile for ARM64 Android)
-      run: |
-        mkdir -p build && cd build
-        cmake -G Ninja ../llvm-project/llvm \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_SYSTEM_NAME=Android \
-          -DCMAKE_SYSTEM_VERSION=29 \
-          -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-          -DCMAKE_ANDROID_NDK=/path/to/ndk \ # 需要提供NDK路径，或用下面2行代替
-          -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-          -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-          -DLLVM_ENABLE_PROJECTS="clang;lld" \
-          -DLLVM_TARGETS_TO_BUILD="AArch64;ARM" \
-          -DLLVM_DEFAULT_TARGET_TRIPLE="aarch64-linux-android" \
-          -DLLVM_APPEND_VC_REV=OFF \
-          -DLLVM_INCLUDE_TESTS=OFF \
-          -DCLANG_VENDOR=" (based on r563880)"
+      - name: Configure CMake
+        run: |
+          mkdir build && cd build
+          # 注意：源码可能在 llvm-project/llvm 子目录
+          # 需要先确认正确的路径
+          if [ -f "../llvm-project/llvm/CMakeLists.txt" ]; then
+            CMAKE_SRC="../llvm-project/llvm"
+          else
+            CMAKE_SRC="../llvm-project"
+          fi
+          echo "Using CMake source: $CMAKE_SRC"
+          
+          cmake -G Ninja $CMAKE_SRC \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_ENABLE_PROJECTS="clang;lld" \
+            -DLLVM_TARGETS_TO_BUILD="AArch64;ARM" \
+            -DLLVM_DEFAULT_TARGET_TRIPLE="aarch64-linux-android" \
+            -DLLVM_APPEND_VC_REV=OFF \
+            -DPACKAGE_VERSION="21.0.0" \
+            -DCLANG_VENDOR=" (based on r563880)" \
+            -DLLVM_INCLUDE_TESTS=OFF
 
-    - name: Build
-      run: |
-        cd build
-        ninja clang lld -j$(nproc)
+      - name: Build
+        run: |
+          cd build
+          ninja clang lld -j$(nproc)
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: aosp-clang-android-arm64
-        path: |
-          build/bin/clang
-          build/bin/clang++
-          build/bin/lld
-          build/bin/ld.lld
-          build/lib/clang/
-        retention-days: 7
+      - name: Test binary
+        run: |
+          cd build
+          file bin/clang
+          bin/clang --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aosp-clang
+          path: |
+            build/bin/clang
+            build/bin/clang++
+            build/bin/lld
+            build/bin/ld.lld
+            build/lib/clang/
+          retention-days: 7
