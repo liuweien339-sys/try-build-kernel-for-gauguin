@@ -58,12 +58,6 @@ jobs:
               patch -p1 < patch2.patch
             
               cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
-              
-      - name: 为内核加上隐藏环境属性
-        run: |   
-          wget https://github.com/liuweien339-sys/try-build-kernel-for-gauguin/releases/download/hide/hide.c
-          cp ${GITHUB_WORKSPACE}/hide.c ${GITHUB_WORKSPACE}/kernel/init/hide.c
-          sed -i '/^obj-y += /a obj-y += hide.o' ${GITHUB_WORKSPACE}/kernel/init/Makefile
           
       - name: 制作内核config
         run: |
@@ -77,8 +71,6 @@ jobs:
           export DROIDSPACES_CONFIG="vendor/droidspaces.config"
 
             make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config vendor/droidspaces.config
-
-            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> ${GITHUB_WORKSPACE}/kernel/.config
 
       - name: 构建内核
         run: |
