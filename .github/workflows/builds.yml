@@ -1,0 +1,108 @@
+name: 构建内核
+on:
+  workflow_dispatch:
+jobs:
+  BuildKernel:
+    env:
+        GH_TOKEN: ${{ github.token }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup SWAP
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 16
+          
+      - name: 下载依赖
+        run: |
+          sudo apt update
+          sudo apt install -y \
+          bc bison flex \
+          libssl-dev \
+          libelf-dev \
+          libdw-dev \
+          build-essential \
+          lz4 \
+          git \
+          python3 \
+          curl \
+          dwarves \
+          cpio \
+          gcc-aarch64-linux-gnu
+
+      - name: 克隆源码
+        run: |
+         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin -b lineage-23.2 --depth=1 kernel
+
+      - name: 下载Clang GCC
+        run: |
+              wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz    
+              mkdir -p toolchains/clang-r563880c
+              tar -xzf "clang-r563880c.tar.gz" -C "toolchains/clang-r563880c" || exit 1
+              
+              wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
+              mkdir -p toolchains/aarch64-linux-android-4.9
+              tar -xzf android12L-release.tar.gz -C toolchains/aarch64-linux-android-4.9
+
+      - name: 为内核加上KernelSU支持
+        run: |   
+              cd ${GITHUB_WORKSPACE}/kernel
+              wget https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash -s master || exit 1
+
+              curl -Lo patch2.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch || exit 1
+              patch -p1 < patch2.patch
+            
+              cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
+          
+      - name: 制作内核config
+        run: |
+          cd ${GITHUB_WORKSPACE}/kernel
+          export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export LLVM=1
+          export LLVM_IAS=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export DROIDSPACES_CONFIG="vendor/droidspaces.config"
+
+            make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config vendor/droidspaces.config
+
+      - name: 构建内核
+        run: |
+          cd ${GITHUB_WORKSPACE}/kernel
+          export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export LLVM=1
+          export LLVM_IAS=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
+
+          make -j$(nproc) Image 2>&1 | tee ${GITHUB_WORKSPACE}/build.log
+
+      - name: 制作AK3
+        run: |
+          cd ${GITHUB_WORKSPACE}/kernel
+          ZIP_NAME="gauguin_LineageOS-23.2_KernelSU_$(date -u +"%Y%m%d_%H%M")"
+          
+          git clone https://github.com/Kernel-SU/AnyKernel3.git || exit 1
+
+          cp ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image AnyKernel3/Image
+          cp ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image ./Image
+          cd AnyKernel3 || exit 1
+
+          sed -i "s|ksu_supported=true|ksu_supported=false|" anykernel.sh
+
+          zip -r9 ../"${ZIP_NAME}.zip" * -x .git
+          
+      - name: 上传内核镜像
+        uses: actions/upload-artifact@v4
+        with:
+            name: gauguin-kernel
+            path: |
+             ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image
+             ${GITHUB_WORKSPACE}/kernel/build.log
