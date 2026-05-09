@@ -63,7 +63,7 @@ jobs:
         run: |   
           wget https://github.com/liuweien339-sys/try-build-kernel-for-gauguin/releases/download/hide/hide.c
           cp ${GITHUB_WORKSPACE}/hide.c ${GITHUB_WORKSPACE}/kernel/init/hide.c
-          sed -i '/^obj-y += /a obj-y += hide.o' ${GITHUB_WORKSPACE}/init/Makefile
+          sed -i '/^obj-y += /a obj-y += hide.o' ${GITHUB_WORKSPACE}/kernel/init/Makefile
           
       - name: 制作内核config
         run: |
