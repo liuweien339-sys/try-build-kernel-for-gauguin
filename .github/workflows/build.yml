@@ -58,7 +58,13 @@ jobs:
               patch -p1 < patch2.patch
             
               cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
-
+              
+      - name: 为内核加上隐藏环境属性
+        run: |   
+          wget https://github.com/liuweien339-sys/try-build-kernel-for-gauguin/releases/download/hide/hide.c
+          cp ${GITHUB_WORKSPACE}/hide.c ${GITHUB_WORKSPACE}/kernel/init/hide.c
+          sed -i '/^obj-y += /a obj-y += hide.o' ${GITHUB_WORKSPACE}/init/Makefile
+          
       - name: 制作内核config
         run: |
           cd ${GITHUB_WORKSPACE}/kernel
