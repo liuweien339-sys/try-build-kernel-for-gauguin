@@ -94,7 +94,7 @@ jobs:
 
       - name: 制作AK3
         run: |
-          cd ${GITHUB_WORKSPACE}/gauguin
+          cd ${GITHUB_WORKSPACE}/kernel
           ZIP_NAME="gauguin_LineageOS-23.2_KernelSU_$(date -u +"%Y%m%d_%H%M")"
           
           git clone https://github.com/Kernel-SU/AnyKernel3.git || exit 1
