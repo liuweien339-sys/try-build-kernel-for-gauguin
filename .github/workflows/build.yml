@@ -37,7 +37,7 @@ jobs:
 
       - name: 克隆源码
         run: |
-         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin -b lineage-23.2 --depth=1 gauguin
+         git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin -b lineage-23.2 --depth=1 kernel
 
       - name: 下载Clang GCC
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       - name: 为内核加上KernelSU支持
         run: |   
-              cd ${GITHUB_WORKSPACE}/gauguin
+              cd ${GITHUB_WORKSPACE}/kernel
               wget https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash -s master || exit 1
 
               curl -Lo patch2.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch || exit 1
@@ -61,8 +61,7 @@ jobs:
 
       - name: 制作内核config
         run: |
-          sed -i 's/EXTRAVERSION = .*/EXTRAVERSION = -32457-DS-Lineage23.2/' ${GITHUB_WORKSPACE}/gauguin/Makefile
-          cd ${GITHUB_WORKSPACE}/gauguin
+          cd ${GITHUB_WORKSPACE}/kernel
           export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
           export ARCH=arm64
           export SUBARCH=arm64
@@ -71,13 +70,13 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           export DROIDSPACES_CONFIG="vendor/droidspaces.config"
 
-            make O=out vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config $DROIDSPACES_CONFIG
+            make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config $DROIDSPACES_CONFIG
 
             echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
 
       - name: 构建内核
         run: |
-          cd ${GITHUB_WORKSPACE}/gauguin
+          cd ${GITHUB_WORKSPACE}/kernel
           export PATH="${GITHUB_WORKSPACE}/toolchains/clang-r563880c/bin:$PATH"
           export ARCH=arm64
           export SUBARCH=arm64
@@ -85,7 +84,7 @@ jobs:
           export LLVM_IAS=1
           export CROSS_COMPILE=aarch64-linux-gnu-
 
-          make -j$(nproc) O=out Image 2>&1 | tee ${GITHUB_WORKSPACE}/build.log
+          make -j$(nproc) Image 2>&1 | tee ${GITHUB_WORKSPACE}/build.log
 
       - name: 制作AK3
         run: |
@@ -94,8 +93,8 @@ jobs:
           
           git clone https://github.com/Kernel-SU/AnyKernel3.git || exit 1
 
-          cp ${GITHUB_WORKSPACE}/gauguin/out/arch/arm64/boot/Image AnyKernel3/Image
-          cp ${GITHUB_WORKSPACE}/gauguin/out/arch/arm64/boot/Image ./Image
+          cp ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image AnyKernel3/Image
+          cp ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image ./Image
           cd AnyKernel3 || exit 1
 
           sed -i "s|ksu_supported=true|ksu_supported=false|" anykernel.sh
@@ -107,5 +106,5 @@ jobs:
         with:
             name: gauguin-kernel
             path: |
-             ${GITHUB_WORKSPACE}/gauguin/out/arch/arm64/boot/Image
-             ${GITHUB_WORKSPACE}/gauguin/build.log
+             ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image
+             ${GITHUB_WORKSPACE}/kernel/build.log
