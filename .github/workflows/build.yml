@@ -76,9 +76,9 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           export DROIDSPACES_CONFIG="vendor/droidspaces.config"
 
-            make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config $DROIDSPACES_CONFIG
+            make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config vendor/droidspaces.config
 
-            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
+            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> ${GITHUB_WORKSPACE}/kernel/.config
 
       - name: 构建内核
         run: |
