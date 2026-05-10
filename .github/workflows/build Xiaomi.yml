@@ -41,9 +41,9 @@ jobs:
 
       - name: 下载Clang GCC
         run: |
-              wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz    
-              mkdir -p toolchains/clang-r563880c
-              tar -xzf "clang-r563880c.tar.gz" -C "toolchains/clang-r563880c" || exit 1
+              wgethttps://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android12-release.tar.gz   
+              mkdir -p toolchains/clang
+              tar -xzf "android12-release.tar.gz" -C "toolchains/clang" || exit 1
               
               wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
               mkdir -p toolchains/aarch64-linux-android-4.9
