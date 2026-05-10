@@ -83,21 +83,6 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
 
           make -j$(nproc) Image 2>&1 | tee ${GITHUB_WORKSPACE}/build.log
-
-      - name: 制作AK3
-        run: |
-          cd ${GITHUB_WORKSPACE}/kernel
-          ZIP_NAME="gauguin_LineageOS-23.2_KernelSU_$(date -u +"%Y%m%d_%H%M")"
-          
-          git clone https://github.com/Kernel-SU/AnyKernel3.git || exit 1
-
-          cp ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image AnyKernel3/Image
-          cp ${GITHUB_WORKSPACE}/kernel/arch/arm64/boot/Image ./Image
-          cd AnyKernel3 || exit 1
-
-          sed -i "s|ksu_supported=true|ksu_supported=false|" anykernel.sh
-
-          zip -r9 ../"${ZIP_NAME}.zip" * -x .git
           
       - name: 上传内核镜像
         uses: actions/upload-artifact@v4
