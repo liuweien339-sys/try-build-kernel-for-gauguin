@@ -1,4 +1,4 @@
-name: 构建内核
+name: 构建内核xiaomi
 on:
   workflow_dispatch:
 jobs:
