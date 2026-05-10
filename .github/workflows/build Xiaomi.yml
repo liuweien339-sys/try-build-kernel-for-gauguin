@@ -69,7 +69,7 @@ jobs:
           export LLVM_IAS=1
           export CROSS_COMPILE=aarch64-linux-gnu-
           export DROIDSPACES_CONFIG="droidspaces.config"
-          scripts/config --disable CONFIG_CC_WERROR
+          scripts/config --enable CONFIG_CC_WERROR
 
             make cezanne_user_defconfig droidspaces.config
 
