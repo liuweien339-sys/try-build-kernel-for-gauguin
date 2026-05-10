@@ -37,7 +37,7 @@ jobs:
 
       - name: 克隆源码
         run: |
-         git clone https://github.com/MiCode/Xiaomi_Kernel_OpenSource.git -b cezanne --depth=1 kernel
+         git clone https://github.com/MiCode/Xiaomi_Kernel_OpenSource.git -b cezanne-r-oss --depth=1 kernel
 
       - name: 下载Clang GCC
         run: |
