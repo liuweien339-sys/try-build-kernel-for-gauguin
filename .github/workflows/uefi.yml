@@ -25,7 +25,7 @@ jobs:
           export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
           make -C BaseTools
           . edksetup.sh
-          build -a AARCH64 -p ShellPkg/ShellPkg.dsc -b RELEASE -t GCC5
+          build -a AARCH64 -p ShellPkg/ShellPkg.dsc -b RELEASE -t GCC
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
