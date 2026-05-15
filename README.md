@@ -1,5 +1,11 @@
 # 如何为gauguin LineageOS23.2构建内核?
 
+# 前期准备
+你需要一台x86的Linux/一个手机的ARM Ubuntu
+(使用手机ARM Ubuntu可能遇到各种错误 不推荐)
+需要约8GB的RAM 这样保障不会OOM
+16G的完整存储空间 编译需要这些
+
 # 克隆源码
 克隆你的内核源码
 ```shell
