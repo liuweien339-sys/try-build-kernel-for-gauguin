@@ -46,8 +46,15 @@ export PATH="~/clang/bin:$PATH"
 ```shell
 export PATH="~/gcc/bin:$PATH"
 ```
+```shell
+export ARCH=arm64
+export SUBARCH=arm64
+export LLVM=1
+export LLVM_IAS=1
+export CROSS_COMPILE=aarch64-linux-gnu-
+```
 # 让内核变得更好
-这里我用的KernelSU和DroidSpaces当作内核的附加 你可以选择其他的
+这里我用的KernelSU当作内核的附加 你可以选择其他的
 
 先进入内核源码目录
 ```shell
@@ -57,13 +64,14 @@ cd ~/kernel
 ```shell
 wget https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash -s master
 ```
-集成DroidSpaces
+# 制作内核的config
 ```shell
-curl -Lo patch2.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch
+make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config
 ```
+# 开始编译
 ```shell
-patch -p1 < patch2.patch
+make -j$(nproc) Image 2>&1 | tee ~/build.log
 ```
-```shell
-
-```
+这个过程可能需要一些时间 稍等一会吧
+# 结束
+编译成功后 ~/kernel/arch/arm64/boot/里面会有一个Image 可以把它做成AnyKernel3刷入手机
