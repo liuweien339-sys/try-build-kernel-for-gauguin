@@ -82,6 +82,8 @@ jobs:
           
       - name: 制作内核配置
         run: |
+          cd  ${GITHUB_WORKSPACE}/kernel
+          
           CLANG_ROOT="${GITHUB_WORKSPACE}/toolchains/clang/bin"
           export PATH="${CLANG_ROOT}:$PATH"
           export ARCH=arm64
