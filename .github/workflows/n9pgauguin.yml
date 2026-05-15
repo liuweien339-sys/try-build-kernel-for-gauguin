@@ -54,11 +54,11 @@ jobs:
           
       - name: 下载Clang
         run: |
-              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
+             curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
 
-          mkdir -p toolchains/clang
+             mkdir -p toolchains/clang
           
-          tar -xf "clang-r563880c.tar.gz" -C "toolchains/clang" || exit 1
+             tar -xf "clang-r563880c.tar.gz" -C "toolchains/clang" || exit 1
 
       - name: 引用插件
         run: |
