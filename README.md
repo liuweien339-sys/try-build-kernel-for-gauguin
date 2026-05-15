@@ -39,4 +39,10 @@ mkdir gcc
 ```shell
 tar -xzf android12L-release.tar.gz -C ~/gcc
 ```
-# 接下来 可以附加配置了
+# 设置PATH
+```shell
+export PATH="~/clang/bin:$PATH"
+```
+```shell
+export PATH="~/gcc/bin:$PATH"
+```
