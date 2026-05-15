@@ -1,0 +1,145 @@
+name: Build 
+
+on:
+  workflow_dispatch:
+jobs:
+  BuildKernel:
+    env:
+        GH_TOKEN: ${{ github.token }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置SWAP
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 16
+          
+      - name: 下载编译工具链
+        run: |
+          sudo apt update
+          sudo apt install -y \
+          bc bison flex \
+          libssl-dev \
+          libelf-dev \
+          libdw-dev \
+          build-essential \
+          lz4 \
+          git \
+          python3 \
+          curl \
+          dwarves \
+          cpio \
+          gcc-aarch64-linux-gnu
+          
+      - name: 编译选项
+        run: |
+          echo "xiaomi"
+          echo "gauguin"
+          echo "r563880c"
+          echo "LineageOS"
+          echo "android_kernel"
+          echo "ksu_type:KernelSU By xxx"
+          echo "sufus4.19"
+          echo "droidspaces:4.19"
+          echo "gcc:True"
+          
+      - name: 克隆内核源码
+        run: |
+          git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin --depth=1 -b lineage-23.2 kernel
+          
+      - name: 下载Clang
+        run: |
+              curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz
+
+          mkdir -p toolchains/clang
+          
+          tar -xf "clang-r563880c.tar.gz" -C "toolchains/clang" || exit 1
+
+      - name: 引用插件
+        run: |
+          cd ${GITHUB_WORKSPACE}/kernel
+          
+          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master
+          
+          curl -Lo patch2.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch
+          patch -p1 < patch2.patch
+
+          cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
+
+           curl -Lo susfs.patch https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/Patch/susfs_patch_to_4.19.patch
+           
+           curl -Lo inline.sh https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/susfs_inline_hook_patches.sh
+
+              patch -p1 < susfs.patch || true
+              bash inline.sh || true
+
+          touch ./.scmversion
+          
+      - name: 制作内核配置
+        run: |
+          CLANG_ROOT="${GITHUB_WORKSPACE}/toolchains/clang/bin"
+          export PATH="${CLANG_ROOT}:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export LLVM=1
+          export LLVM_IAS=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export DROIDSPACES_CONFIG="vendor/droidspaces.config"
+          
+          make O=out vendor/xiaomi/gauguin.config vendor/lito-perf_defconfig $DROIDSPACES_CONFIG
+
+            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> out/.config
+            echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> out/.config
+          
+      - name: 构建内核
+        run: |
+          cd  ${GITHUB_WORKSPACE}/kernel
+          
+          CLANG_ROOT="${GITHUB_WORKSPACE}/toolchains/clang/bin"
+          export PATH="${CLANG_ROOT}:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export LLVM=1
+          export LLVM_IAS=1
+          export CROSS_COMPILE=aarch64-linux-gnu-
+
+          make -j$(nproc) O=out Image 2>&1 | tee ~/build.log
+
+      - name: 制作AnyKernel3
+        run: |
+          ZIP_NAME="gauguin_LineageOS-23.2_KernelSU-by-xxx_$(date -u +"%Y%m%d_%H%M")"
+          
+          git clone https://github.com/Kernel-SU/AnyKernel3.git
+          
+          cp kernel/out/arch/arm64/boot/Image ./Image
+          
+          cd AnyKernel3
+
+          sed -i "s|ksu_supported=false|ksu_supported=true|" anykernel.sh
+
+          zip -r9 ../"${ZIP_NAME}.zip" * -x .git
+
+      - name: 上传结果
+        uses: actions/upload-artifact@v4
+        with:
+         name: kernel
+         path: |
+          *.zip
+          Image
+          build.log
+         if-no-files-found: error
+         compression-level: 6
