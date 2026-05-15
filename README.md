@@ -1,16 +1,16 @@
-# 如何为gauguin构建内核?
+# 如何为gauguin LineageOS23.2构建内核?
 
 # 克隆源码
-首先 克隆你的内核源码 这里以LineageOS23.2举例
+克隆你的内核源码
 ```shell
-git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2 --depth=1
+git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin.git -b lineage-23.2 --depth=1 kernel
 ```
 # 下载工具链
-首先 更新一下包管理
+更新一下包管理
 ```shell
 sudo apt update
 ```
-随后 下载工具链
+下载工具链
 ```shell
 sudo apt install bc bison flex libssl-dev libelf-dev libdw-dev build-essential lz4 git python3 curl
 dwarves cpio gcc-aarch64-linux-gnu
@@ -45,4 +45,25 @@ export PATH="~/clang/bin:$PATH"
 ```
 ```shell
 export PATH="~/gcc/bin:$PATH"
+```
+# 让内核变得更好
+这里我用的KernelSU和DroidSpaces当作内核的附加 你可以选择其他的
+
+先进入内核源码目录
+```shell
+cd ~/kernel
+```
+集成KernelSU
+```shell
+wget https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash -s master
+```
+集成DroidSpaces
+```shell
+curl -Lo patch2.patch https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/non-GKI/02.fix_restore%20cgroup%20file%20prefix%20handling%20.patch
+```
+```shell
+patch -p1 < patch2.patch
+```
+```shell
+
 ```
