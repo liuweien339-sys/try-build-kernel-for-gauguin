@@ -80,5 +80,6 @@ make vendor/lito-perf_defconfig vendor/xiaomi/gauguin.config
 make -j$(nproc) Image 2>&1 | tee ~/build.log
 ```
 这个过程可能需要一些时间 稍等一会吧
+!如果你是ARM手机的Ubuntu 千万不要用全核心 一半就行 不然大概率OOM！
 # 结束
 编译成功后 ~/kernel/arch/arm64/boot/里面会有一个Image 可以把它做成AnyKernel3刷入手机
