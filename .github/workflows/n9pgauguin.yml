@@ -71,12 +71,12 @@ jobs:
 
           cp ${GITHUB_WORKSPACE}/configs/droidspaces-nongki.config arch/arm64/configs/vendor/droidspaces.config
 
-           curl -Lo susfs.patch https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/Patch/susfs_patch_to_4.19.patch
+           #curl -Lo susfs.patch https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/Patch/susfs_patch_to_4.19.patch
            
-           curl -Lo inline.sh https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/susfs_inline_hook_patches.sh
+           #curl -Lo inline.sh https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/susfs_inline_hook_patches.sh
 
-              patch -p1 < susfs.patch || true
-              bash inline.sh || true
+              #patch -p1 < susfs.patch || true
+              #bash inline.sh || true
 
           touch ./.scmversion
           
@@ -93,17 +93,17 @@ jobs:
           
           make O=out vendor/xiaomi/gauguin.config vendor/lito-perf_defconfig $DROIDSPACES_CONFIG
 
-            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> out/.config
-            echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> out/.config
+            #echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> out/.config
+            #echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> out/.config
           
       - name: 构建内核
         run: |
