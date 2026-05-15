@@ -23,5 +23,9 @@ wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+a
 ```shell
 mkdir clang
 ```
+解压clang
+```shell
+tar -xzf "clang-r563880c.tar.gz" -C "clang"
+```
 wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/heads/android12L-release.tar.gz
 ```
