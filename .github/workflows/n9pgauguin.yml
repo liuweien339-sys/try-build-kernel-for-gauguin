@@ -50,7 +50,7 @@ jobs:
           
       - name: 克隆内核源码
         run: |
-          git clone https://github.com/LineageOS/android_kernel_xiaomi_gauguin --depth=1 -b lineage-23.2 kernel
+          git clone https://github.com/LineageOS/android_kernel_xiaomi_sdm845.git --depth=1 -b lineage-22.2 kernel
           
       - name: 下载Clang
         run: |
@@ -95,7 +95,7 @@ jobs:
           
           make O=out vendor/xiaomi/gauguin.config vendor/lito-perf_defconfig $DROIDSPACES_CONFIG
 
-            #echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
+            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
             #echo "CONFIG_KSU_SUSFS=y" >> out/.config
             #echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> out/.config
             #echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> out/.config
