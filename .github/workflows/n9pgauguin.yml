@@ -93,7 +93,7 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           export DROIDSPACES_CONFIG="vendor/droidspaces.config"
           
-          make O=out vendor/xiaomi/gauguin.config vendor/lito-perf_defconfig $DROIDSPACES_CONFIG
+          make O=out vendor/xiaomi/dipper.config vendor/msm8937-perf_defconfig $DROIDSPACES_CONFIG
 
             echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> out/.config
             #echo "CONFIG_KSU_SUSFS=y" >> out/.config
@@ -123,7 +123,7 @@ jobs:
 
       - name: 制作AnyKernel3
         run: |
-          ZIP_NAME="gauguin_LineageOS-23.2_KernelSU-by-xxx_$(date -u +"%Y%m%d_%H%M")"
+          ZIP_NAME="dipper_LineageOS-22.2_KernelSU-by-xxx_$(date -u +"%Y%m%d_%H%M")"
           
           git clone https://github.com/Kernel-SU/AnyKernel3.git
           
